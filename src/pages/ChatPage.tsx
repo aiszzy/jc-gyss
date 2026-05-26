@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Sparkles } from 'lucide-react';
 import ChatBubble from '../components/ChatBubble';
 import { useAppStore } from '../store/useAppStore';
 import { ChatMessage } from '../types';
@@ -8,15 +7,33 @@ import { ChatMessage } from '../types';
 const ChatPage: React.FC = () => {
   const { chatMessages, addChatMessage } = useAppStore();
   const [inputValue, setInputValue] = useState('');
+  const [showQuickReplies, setShowQuickReplies] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Quick reply options
   const quickReplies = [
-    '查看态势概览',
-    '查看违规线索',
-    '巡检计划',
-    '整改进度',
-    '如何使用'
+    { category: '数据查询', items: [
+      { text: '今天的态势如何？', icon: '📊' },
+      { text: '有多少违规线索？', icon: '🔍' },
+      { text: '高风险线索有哪些？', icon: '⚠️' },
+      { text: '本周新增多少违规？', icon: '📈' },
+    ]},
+    { category: '业务操作', items: [
+      { text: '查看巡检计划', icon: '📅' },
+      { text: '导出今日报告', icon: '📄' },
+      { text: '跟进整改进度', icon: '✅' },
+      { text: '查询问题商家', icon: '🏪' },
+    ]},
+    { category: '系统帮助', items: [
+      { text: '如何使用这个系统？', icon: '❓' },
+      { text: '有哪些违规类型？', icon: '📋' },
+      { text: '风险等级怎么划分？', icon: '🏷️' },
+      { text: '线索如何处理？', icon: '⚙️' },
+    ]},
+    { category: '日常问候', items: [
+      { text: '你好', icon: '👋' },
+      { text: '谢谢', icon: '🙏' },
+      { text: '再见', icon: '👋' },
+    ]}
   ];
 
   const scrollToBottom = () => {
@@ -29,12 +46,12 @@ const ChatPage: React.FC = () => {
 
   const handleQuickReply = (text: string) => {
     setInputValue(text);
+    setShowQuickReplies(false);
   };
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
 
-    // Add user message
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -45,7 +62,6 @@ const ChatPage: React.FC = () => {
     addChatMessage(userMessage);
     setInputValue('');
 
-    // Simulate intelligent assistant response based on input content
     setTimeout(() => {
       const input = inputValue.toLowerCase();
       let responseContent = '';
@@ -110,6 +126,43 @@ const ChatPage: React.FC = () => {
           '- PDF (.pdf)\n' +
           '- Word (.docx)\n\n' +
           '请告诉我您需要哪类报告，我来为您生成！';
+      } else if (input.includes('违规类型') || input.includes('类型')) {
+        responseContent = '当前系统支持识别的违规类型：\n\n' +
+          '🔴 **高风险**\n' +
+          '- 幽灵外卖：商家地址与实际不符\n' +
+          '- 无证经营：无营业执照或许可证\n' +
+          '- 超范围经营：超出许可范围经营\n' +
+          '- 证照过期：营业执照或许可证已过期\n\n' +
+          '🟡 **中风险**\n' +
+          '- 证照公示不规范：未按要求公示资质\n' +
+          '- 卫生问题：店内卫生状况不佳\n' +
+          '- 食品存放不当：食材存储不符合要求\n\n' +
+          '🟢 **低风险**\n' +
+          '- 信息更新不及时：商家信息未及时更新\n' +
+          '- 其他轻微问题';
+      } else if (input.includes('风险等级') || input.includes('等级')) {
+        responseContent = '风险等级划分标准：\n\n' +
+          '🔴 **高风险**（立即处理）\n' +
+          '- 可能对消费者健康造成严重威胁\n' +
+          '- 涉及违法行为\n' +
+          '- 需要立即下架或处罚\n\n' +
+          '🟡 **中风险**（限期整改）\n' +
+          '- 存在一定安全隐患\n' +
+          '- 需要在规定时间内整改\n' +
+          '- 逾期未整改将升级为高风险\n\n' +
+          '🟢 **低风险**（提醒改进）\n' +
+          '- 轻微违规或信息不完善\n' +
+          '- 给予提醒并要求完善\n' +
+          '- 不影响正常经营';
+      } else if (input.includes('线索处理') || input.includes('如何处理')) {
+        responseContent = '线索处理流程：\n\n' +
+          '1️⃣ **发现线索**：系统自动巡检或人工举报\n' +
+          '2️⃣ **风险评估**：根据规则自动判定风险等级\n' +
+          '3️⃣ **派发处理**：根据区域分配给对应监管人员\n' +
+          '4️⃣ **现场核查**：监管人员到店核实情况\n' +
+          '5️⃣ **整改要求**：下达整改通知书或行政处罚\n' +
+          '6️⃣ **复查验收**：确认整改完成情况\n' +
+          '7️⃣ **归档结案**：记录处理结果并存档';
       } else if (input.includes('你好') || input.includes('您好') || input.includes('hi') || input.includes('hello')) {
         responseContent = '您好！👋 我是网络餐饮巡检智能助手。\n\n' +
           '我可以帮您：\n' +
@@ -131,7 +184,7 @@ const ChatPage: React.FC = () => {
           '- "导出本周报告"\n' +
           '- "跟进整改进度"\n\n' +
           '您可以尝试用自然语言提问，我会尽力为您提供帮助！';
-      } else if (input.includes('谢谢') || input.includes('感谢')) {
+      } else if (input.includes('谢谢') || input.includes('感谢') || input.includes('再见')) {
         responseContent = '不客气！😊 很高兴能帮到您。\n\n' +
           '如果还有其他问题，随时可以问我。祝您工作顺利！';
       } else {
@@ -152,7 +205,7 @@ const ChatPage: React.FC = () => {
         timestamp: new Date().toISOString()
       };
       addChatMessage(assistantMessage);
-    }, 800 + Math.random() * 700); // Random delay between 800-1500ms for realism
+    }, 800 + Math.random() * 700);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -164,30 +217,11 @@ const ChatPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <h1 className="text-xl font-semibold text-gray-900">网络餐饮巡检助手</h1>
         <p className="text-sm text-gray-500">与智能助手对话，了解巡检情况</p>
       </div>
 
-      {/* Quick Replies */}
-      {chatMessages.length === 0 && (
-        <div className="px-6 pt-4">
-          <div className="flex flex-wrap gap-2">
-            {quickReplies.map((reply, index) => (
-              <button
-                key={index}
-                onClick={() => handleQuickReply(reply)}
-                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-full transition-colors"
-              >
-                {reply}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-4xl mx-auto">
           {chatMessages.map((message) => (
@@ -197,9 +231,48 @@ const ChatPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Input */}
       <div className="bg-white border-t border-gray-200 p-4">
         <div className="max-w-4xl mx-auto">
+          {showQuickReplies && (
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles size={16} className="text-yellow-500" />
+                <span className="text-sm font-medium text-gray-700">快速提问</span>
+              </div>
+              <div className="space-y-3">
+                {quickReplies.map((category, catIndex) => (
+                  <div key={catIndex}>
+                    <div className="text-xs text-gray-500 mb-1.5">{category.category}</div>
+                    <div className="flex flex-wrap gap-2">
+                      {category.items.map((item, itemIndex) => (
+                        <button
+                          key={itemIndex}
+                          onClick={() => handleQuickReply(item.text)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-700 text-sm rounded-full transition-colors"
+                        >
+                          <span>{item.icon}</span>
+                          <span>{item.text}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-gray-500">
+              {chatMessages.length} 条消息
+            </span>
+            <button
+              onClick={() => setShowQuickReplies(!showQuickReplies)}
+              className="text-xs text-blue-600 hover:text-blue-700"
+            >
+              {showQuickReplies ? '收起快速提问' : '展开快速提问'}
+            </button>
+          </div>
+
           <div className="flex gap-3">
             <div className="flex-1 relative">
               <textarea
