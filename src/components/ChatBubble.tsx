@@ -14,6 +14,48 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const { clues } = useAppStore();
   const isUser = message.role === 'user';
 
+  // Simple text formatter to handle basic markdown
+  const formatText = (text: string) => {
+    // Split text by newlines
+    const lines = text.split('\n');
+    
+    return lines.map((line, lineIndex) => {
+      // Handle bold text **text**
+      let formattedLine = line;
+      
+      // Replace **bold** with markers
+      const boldRegex = /\*\*(.*?)\*\*/g;
+      formattedLine = formattedLine.replace(boldRegex, (_, content) => {
+        return `__BOLD_START__${content}__BOLD_END__`;
+      });
+      
+      // Split into parts
+      const parts = formattedLine.split(/(__BOLD_START__|__BOLD_END__)/g);
+      
+      const jsxParts = parts.map((part, partIndex) => {
+        if (part === '__BOLD_START__') return null;
+        if (part === '__BOLD_END__') return null;
+        
+        const isBold = partIndex > 0 && parts[partIndex - 1] === '__BOLD_START__';
+        
+        return (
+          <span 
+            key={partIndex} 
+            className={isBold ? 'font-semibold' : ''}
+          >
+            {part}
+          </span>
+        );
+      });
+      
+      return (
+        <div key={lineIndex} className={line.trim() === '' ? 'h-2' : ''}>
+          {jsxParts}
+        </div>
+      );
+    });
+  };
+
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} mb-6`}>
       {/* Avatar */}
@@ -32,13 +74,17 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
         }`}>
           {/* Text Content */}
           {message.type === 'text' && (
-            <div className="whitespace-pre-wrap">{message.content}</div>
+            <div className="whitespace-pre-wrap leading-relaxed">
+              {formatText(message.content)}
+            </div>
           )}
 
           {/* Card Content */}
           {message.type === 'card' && (
             <div>
-              <div className="mb-4 whitespace-pre-wrap">{message.content}</div>
+              <div className="mb-4 whitespace-pre-wrap leading-relaxed">
+                {formatText(message.content)}
+              </div>
               <div className="space-y-4">
                 {clues.slice(0, 3).map((clue) => (
                   <ClueCard key={clue.id} clue={clue} />
