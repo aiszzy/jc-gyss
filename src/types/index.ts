@@ -52,12 +52,24 @@ export interface ViolationDistribution {
   color: string;
 }
 
+// 卡片类型
+export type CardType = 
+  | 'morning_summary' 
+  | 'screening_result' 
+  | 'clue_detail' 
+  | 'prosecution_suggestion'
+  | 'rectification_tracking'
+  | 'situation_overview'
+  | 'data_source_status';
+
 // 对话消息
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   type: 'text' | 'card';
+  cardType?: CardType;
+  cardData?: any;
   timestamp: string;
 }
 

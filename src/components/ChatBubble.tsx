@@ -4,6 +4,13 @@ import { ChatMessage } from '../types';
 import { formatDateTime } from '../utils/formatters';
 import { Bot, User } from 'lucide-react';
 import ClueCard from './ClueCard';
+import MorningSummaryCard from './MorningSummaryCard';
+import ScreeningResultCard from './ScreeningResultCard';
+import ClueDetailCard from './ClueDetailCard';
+import ProsecutionSuggestionCard from './ProsecutionSuggestionCard';
+import RectificationTrackingCard from './RectificationTrackingCard';
+import SituationOverviewCard from './SituationOverviewCard';
+import DataSourceStatusCard from './DataSourceStatusCard';
 import { useAppStore } from '../store/useAppStore';
 
 interface ChatBubbleProps {
@@ -56,6 +63,33 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
     });
   };
 
+  const renderCard = () => {
+    switch (message.cardType) {
+      case 'morning_summary':
+        return <MorningSummaryCard data={message.cardData} />;
+      case 'screening_result':
+        return <ScreeningResultCard data={message.cardData} />;
+      case 'clue_detail':
+        return <ClueDetailCard data={message.cardData} />;
+      case 'prosecution_suggestion':
+        return <ProsecutionSuggestionCard data={message.cardData} />;
+      case 'rectification_tracking':
+        return <RectificationTrackingCard data={message.cardData} />;
+      case 'situation_overview':
+        return <SituationOverviewCard data={message.cardData} />;
+      case 'data_source_status':
+        return <DataSourceStatusCard data={message.cardData} />;
+      default:
+        return (
+          <div className="space-y-4">
+            {clues.slice(0, 3).map((clue) => (
+              <ClueCard key={clue.id} clue={clue} />
+            ))}
+          </div>
+        );
+    }
+  };
+
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} mb-6`}>
       {/* Avatar */}
@@ -66,15 +100,17 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
       </div>
 
       {/* Content */}
-      <div className={`flex-1 max-w-3xl ${isUser ? 'flex justify-end' : ''}`}>
+      <div className={`flex-1 max-w-5xl ${isUser ? 'flex justify-end' : ''}`}>
         <div className={`rounded-2xl px-4 py-3 ${
           isUser 
             ? 'bg-blue-600 text-white rounded-tr-none' 
-            : 'bg-white text-gray-900 rounded-tl-none shadow-sm border border-gray-200'
+            : 'bg-transparent text-gray-900'
         }`}>
           {/* Text Content */}
           {message.type === 'text' && (
-            <div className="whitespace-pre-wrap leading-relaxed">
+            <div className={`whitespace-pre-wrap leading-relaxed ${
+              isUser ? '' : 'bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-200 rounded-tl-none'
+            }`}>
               {formatText(message.content)}
             </div>
           )}
@@ -82,21 +118,14 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           {/* Card Content */}
           {message.type === 'card' && (
             <div>
-              <div className="mb-4 whitespace-pre-wrap leading-relaxed">
-                {formatText(message.content)}
-              </div>
-              <div className="space-y-4">
-                {clues.slice(0, 3).map((clue) => (
-                  <ClueCard key={clue.id} clue={clue} />
-                ))}
-              </div>
-              {clues.length > 3 && (
-                <div className="mt-4 text-center">
-                  <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                    查看全部 {clues.length} 条线索 →
-                  </button>
+              {message.content && (
+                <div className={`mb-4 whitespace-pre-wrap leading-relaxed ${
+                  isUser ? '' : 'bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-200 rounded-tl-none'
+                }`}>
+                  {formatText(message.content)}
                 </div>
               )}
+              {renderCard()}
             </div>
           )}
 
